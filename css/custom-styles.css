@@ -1,0 +1,94 @@
+/* custom-styles.css */
+.custom-form input[type="text"],
+.custom-form input[type="email"],
+.custom-form input[type="password"]
+ {
+    border: 2px solid #3498db;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 16px;
+    width: 30%;
+    box-sizing: border-box;
+}
+
+.custom-form label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+}
+
+
+.submit-button {
+    background-color: #51b318f3; /* Main background color */
+    color: #ffffff; /* Text color */
+    padding: 10px 20px; /* Padding */
+    margin: 20px 30px 40px 150px ;
+    border: none; /* No border */
+    border-radius: 10px; /* Rounded corners */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Box shadow */
+}
+
+.submit-button:hover {
+    background-color: #79c423; /* Darker background on hover */
+    transform: scale(1.50); /* Slightly enlarge the button */
+}
+
+.submit-button:focus {
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Custom focus shadow */
+}
+
+
+
+
+/* For Admin Area  custom plugin page css  */
+
+.pagination {
+    margin: 20px 0 5px 140px ;
+}
+
+.pagination a {
+    padding: 5px 10px;
+    margin: 0 2px;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    color: #00aa5b;
+}
+
+.pagination a.current {
+    background-color: #0073aa;
+    color: #fff;
+}
+
+.table_heading {
+    margin:10px 0 10px 80px;
+    color:  #034868;
+}
+/*  Submit Button style sheet for  */
+.custon_plugin_submit_button {
+    background-color: #25a0da; /* Main background color */
+    color: #ffffff; /* Text color */
+    padding: 5px 10px; /* Padding */
+     margin: 5px; 
+    border: none; /* No border */
+    border-radius: 10px; /* Rounded corners */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Box shadow */
+}
+
+.custon_plugin_submit_button:hover {
+    background-color: #464580; /* Darker background on hover */
+    transform: scale(1.10); /* Slightly enlarge the button */
+}
+
+.custon_plugin_submit_button:focus {
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Custom focus shadow */
+}
