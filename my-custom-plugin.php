@@ -58,6 +58,7 @@ function create_pantable_table() {
     dbDelta($sql);
 }
 
+
 // Function to handle form submission and display
 function custom_form_shortcode( $atts ) {
     if ( isset( $_POST['submit'] ) ) {
@@ -75,21 +76,18 @@ function custom_form_shortcode( $atts ) {
                 $product_name = get_the_title( $product_id );
                 $quantity = $cart_item['quantity'];
                 $product = wc_get_product( $product_id );
-                 $price = $product->get_price();
-
+                $price = $product->get_price();
                 $subtotal = $quantity * $price;
 
                 $product_details[] = array(
                     'product_id' => $product_id,
                     'product_name' => $product_name,
-                    'quantity'=> $quantity,
-                    'price'=> $price . "\n",
-                    'subtotal'=>$subtotal,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                    'subtotal' => $subtotal,
                 );
-                
-                 
             }
-           
+
             // Calculate total
             $total = array_sum( wp_list_pluck( $product_details, 'subtotal' ) );
 
@@ -99,12 +97,50 @@ function custom_form_shortcode( $atts ) {
                 'email' => $email,
                 'phone' => $phone,
                 'product_details' => json_encode($product_details),
-                'total'=>  $total
+                'total' => $total
             ) );
             $insert_id = $wpdb->insert_id;
 
             if ( $insert_id ) {
-                // Success message
+                // Email settings
+                $to = "pnkaj.sharma97@gmail.com"; // Admin 
+                $subject = 'Order Confirmation';
+                $headers = array('Content-Type: text/html; charset=UTF-8');
+                
+                // Email body
+                ob_start();
+                ?>
+                <h1>Order Confirmation</h1>
+                <p>Thank you for your order. Here are the details:</p>
+                <p><strong>Email:</strong> <?php echo esc_html( $email ); ?></p>
+                <p><strong>Phone:</strong> <?php echo esc_html( $phone ); ?></p>
+                <table border="1" style="border-collapse: collapse; width: 100%;">
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Subtotal</th>
+                    </tr>
+                    <?php foreach ( $product_details as $item ) : ?>
+                    <tr>
+                        <td><?php echo esc_html( $item['product_name'] ); ?></td>
+                        <td><?php echo esc_html( $item['quantity'] ); ?></td>
+                        <td><?php echo wp_kses_post( wc_price( $item['price'] ) ); ?></td>
+                        <td><?php echo wp_kses_post( wc_price( $item['subtotal'] ) ); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                    <tr>
+                        <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+                        <td><?php echo wp_kses_post( wc_price( $total ) ); ?></td>
+                    </tr>
+                </table>
+                <?php
+                $message = ob_get_clean();
+
+                // Send email
+                wp_mail( $to, $subject, $message, $headers );
+
+                // Redirect after successful submission
                 wp_redirect( get_permalink() );
                 exit;
             } else {
@@ -118,19 +154,23 @@ function custom_form_shortcode( $atts ) {
 
     ob_start();
     ?>
-    <form class = "custom-form" method="post">
+    <form class="custom-form" method="post">
         <label for="email">Email:</label>
         <input type="email" name="email" id="email" required>
         <br>
         <label for="phone">Phone:</label>
         <input type="text" name="phone" id="phone" required>
         <br>
-        <input type="submit"  class="submit-button" name="submit" value="Submit">
+        <input type="submit" class="submit-button" name="submit" value="Submit">
     </form>
     <?php
     return ob_get_clean();
 }
 add_shortcode( 'custom_form', 'custom_form_shortcode' );
+
+
+
+
 
 // Function to handle plugin activation
 function my_plugin_activate() {
@@ -162,71 +202,118 @@ function my_custom_plugin_menu() {
     );
 }
 add_action( 'admin_menu', 'my_custom_plugin_menu' );
+
+
+ // Function for show the Product Details in table with Pagination  and add a show more for Pop up  product details.
 function checkout_page_detail() {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'pantable';
+    $table_name = $wpdb->prefix . "pantable";
 
-    // Pagination parameters
-    $items_per_page = 3;
-    $current_page = isset($_GET['paged']) ? intval($_GET['paged']) : 1;
+    // Pagination
+    $items_per_page = 5;
+    $current_page = isset($_GET['paged'])? intval($_GET['paged']) : 1;
     $offset = ($current_page - 1) * $items_per_page;
 
-    // Total number of items
+    // Total number of items 
     $total_items = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
 
-    // Fetch data for the current page
-    $query = $wpdb->prepare(
-        "SELECT * FROM $table_name LIMIT %d OFFSET %d",
-        $items_per_page,
-        $offset
-    );
-    $results = $wpdb->get_results($query);
+    // Fetch data for the current Page from the "pantable" on Specific criteria  
+    $query = $wpdb-> prepare
+    (" SELECT * FROM $table_name ORDER BY created_at DESC LIMIT %d OFFSET %d ",
+    $items_per_page,
+    $offset, 
+     );
 
+    // Retrieve data from the "pantable" table based on your specific criteria
+    $results = $wpdb->get_results($query);
+    
     echo '<div class="wrap">';
     echo '<h1>Checkout Page Detail developed by Pankaj</h1>';
 
     if (!empty($results)) {
+     
+        // Display table
         echo '<table border="1" style="margin: 10px; padding: 5px;">';
-        echo'<h2 class="table_heading">  User Cart Page details Table';
         echo '<tr>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Total</th>
-              <th>Action</th>
+              <th> S.No.   </th> 
+              <th> Email   </th> 
+              <th> Phone   </th> 
+              <th> Total   </th> 
+              <th> Action  </th>
+              <th> Created At </th> 
               </tr>';
 
-        foreach ($results as $result) {
-            $escapedProductDetails = htmlspecialchars($result->product_details, ENT_QUOTES, 'UTF-8');
-            $escapedTotal          = htmlspecialchars($result->total, ENT_QUOTES, 'UTF-8');
+               // Intilize the Serial Number 
+               $serialNumber = $offset + 1 ;
 
+        foreach ($results as $result) {
             echo '<tr>';
-            echo '<td style="padding:5px;">' . esc_html($result->email) . '</td>';
+            echo '<td style = "padding:5px;">' . $serialNumber .            '</td>';
+            echo '<td style = "padding:5px;">' . esc_html($result->email) . '</td>';
             echo '<td>' . esc_html($result->phone) . '</td>';
             echo '<td>' . esc_html($result->total) . '</td>';
-            echo '<td><button type="button" class="custon_plugin_submit_button" onclick="handleAction(\'' . $escapedProductDetails . '\', \'' . $escapedTotal . '\')">Show More </button></td>';
+            echo '<td><button onclick="showDetails(\'' . esc_js($result->product_details) . '\', \'' . esc_html($result->total). '\')">Show More</button></td>';
+            echo ' <td>' . esc_html($result->created_at).'</td>';
             echo '</tr>';
+
+            //  Increase the Serial Number Counter 
+            $serialNumber++;
         }
         echo '</table>';
 
-        // Pagination controls
+        // Modal HTML
+        echo '<div id="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; max-width:600px; padding:20px; background:#fff; border:1px solid #ccc; box-shadow:0 2px 10px rgba(0,0,0,0.2); z-index:1001;">
+              <h2>Product Details</h2>
+              <div id="modal-content"></div>
+              <button onclick="closeModal()">Close</button>
+              </div>';
+
+        // Modal overlay
+        echo '<div id="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;"></div>';
+    
+   
+        // Pagination Control 
         $total_pages = ceil($total_items / $items_per_page);
-        echo '<div class="pagination">';
-        for ($i = 1; $i <= $total_pages; $i++) {
-            $class = ($i == $current_page) ? 'current' : '';
-            echo "<a href='?page=checkout-page-details&paged=$i' class='$class'>$i</a> ";
-        
+        echo'<div class ="pagination">';
+        for( $i=1; $i<=$total_pages; $i++){
+            $class = ($i == $current_page) ? 'current':'';
+            echo"<a href ='?page=checkout-page-details&paged=$i' class='$class'> $i </a>";
         }
-        echo '</div>';
-    } else {
+        echo'</div>';
+    
+    
+    }
+    else {
         echo '<h2>No data found in the "pantable" table.</h2>';
     }
 
-    echo '<script type="text/javascript">
-    function handleAction(product_details, total) {
-        alert("Product Details: " + product_details + "\\nSum Total: " + total);
+    // JavaScript for modal
+    echo '<script>
+    function showDetails(details) {
+        var modal = document.getElementById("modal");
+        var overlay = document.getElementById("modal-overlay");
+        var content = document.getElementById("modal-content");
+        
+        content.innerText = details;
+        modal.style.display = "block";
+        overlay.style.display = "block";
+        
+        // Add event listener to close modal when clicking outside
+        overlay.addEventListener("click", closeModal);
+    }
+
+    function closeModal() {
+        var modal = document.getElementById("modal");
+        var overlay = document.getElementById("modal-overlay");
+        
+        modal.style.display = "none";
+        overlay.style.display = "none";
+        
+        // Remove event listener after modal is closed
+        overlay.removeEventListener("click", closeModal);
     }
     </script>';
-    echo '</div>';
+    echo '</div>'; 
 }
 ?>
 
